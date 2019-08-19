@@ -65,7 +65,7 @@ def rotary_interrupt(A_or_B):
 	return	
 
 #Calculate minutes reading, direction and speed of turning left/rignt
-def minutes(minutes):
+def Minutes(minutes):
     global minn, Rotary_counter, LockRotary, Move_on
 
     NewCounter = 0
@@ -93,6 +93,36 @@ def minutes(minutes):
         formatted = '{:02d}:{:02d}'.format(minutes, 0)
                 
         print (formatted, end = '\r')
+
+#Calculate minutes reading, direction and speed of turning left/rignt
+def Seconds(seccs):
+    global seccs, Rotary_counter, LockRotary, Move_on
+
+    NewCounter = 0
+    
+
+    init() 
+    Mover_button()
+
+    while True:
+        time.sleep(0.1)								# sleep 100 msec
+
+        LockRotary.acquire()					# get lock for rotary switch
+        NewCounter = Rotary_counter			# get counter value
+        Rotary_counter = 0						# RESET IT TO 0
+        LockRotary.release()					# and release lock
+					
+        if (NewCounter !=0):					# Counter has CHANGED
+            seconds = seconds + NewCounter*abs(NewCounter)	# Decrease or increase minutes
+        seccs = seconds
+        # Jump to seconds
+        
+        if Move_on == False:
+            break
+
+        formatted = '{:02d}:{:02d}'.format(seconds, 0)
+                
+        print (formatted, end = '\r')
         
     
 def countdown(min, sec):
@@ -108,10 +138,10 @@ def countdown(min, sec):
         t -= 1
     print('Time is up!!!! \n\n\n\n\n')
 
-secc = 0
-minutes(0)
-# seconds(0)
-countdown(minn, secc)
+
+Minutes(0)
+Seconds(0)
+countdown(minn, seccs)
 
 quit()
 
