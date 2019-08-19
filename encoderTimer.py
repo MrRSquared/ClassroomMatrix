@@ -6,69 +6,95 @@ Our main encoder code is borrowed from This code is courtesy of hrvoje.
 It can be found here. https://www.raspberrypi.org/forums/ """
 
 import time
-from gpiozero import Button
+import RPi.GPIO as GPIO
+import threading
+Enc_A = 2  				# Encoder input A: input GPIO 4 
+Enc_B = 3  			        # Encoder input B: input GPIO 14 
+Button = 4              #Encoder button
 
-pin_a = Button(2, pull_up = True)
-pin_b = Button(3, pull_up = True)
+Rotary_counter = 0  			# Start counting from 0
+Current_A = 1					# Assume that rotary switch is not 
+Current_B = 1					# moving while we init software
 
-button = Button(4, pull_up = True)
-reset = Button(5, pull_up = True)
+LockRotary = threading.Lock()		# create lock for rotary switch
+	
+
+# initialize interrupt handlers
+def init():
+    GPIO.setwarnings(True)
+    GPIO.setmode(GPIO.BCM)
+
+    GPIO.setup(Button,GPIO.IN, pull_up_down = GPIO.PUD_UP)
+
+    GPIO.setup(Enc_A, GPIO.IN) 				
+    GPIO.setup(Enc_B, GPIO.IN)
+    
+    GPIO.add_event_detect(Enc_A, GPIO.RISING, callback=rotary_interrupt) 				# NO bouncetime 
+    GPIO.add_event_detect(Enc_B, GPIO.RISING, callback=rotary_interrupt) 				# NO bouncetime 
+
+    return
+
+def Mover_button():
+    global Move_on
+    Move_on = GPIO.input(Button)
+    #return
+
+# Rotarty encoder interrupt:
+# this one is called for both inputs from rotary switch (A and B)
+def rotary_interrupt(A_or_B):
+	global Rotary_counter, Current_A, Current_B, LockRotary, Move_on
+													# read both of the switches
+	Switch_A = GPIO.input(Enc_A)
+	Switch_B = GPIO.input(Enc_B)
+													# now check if state of A or B has changed
+													# if not that means that bouncing caused it
+	if Current_A == Switch_A and Current_B == Switch_B:		# Same interrupt as before (Bouncing)?
+		return										# ignore interrupt!
+
+	Current_A = Switch_A								# remember new state
+	Current_B = Switch_B								# for next bouncing check
 
 
+	if (Switch_A and Switch_B):						# Both one active? Yes -> end of sequence
+		LockRotary.acquire()						# get lock 
+		if A_or_B == Enc_B:							# Turning direction depends on 
+			Rotary_counter += 1						# which input gave last interrupt
+		else:										# so depending on direction either
+			Rotary_counter -= 1						# increase or decrease counter
+		LockRotary.release()						# and release lock
+	return	
 
+#Calculate minutes reading, direction and speed of turning left/rignt
 def minutes(minutes):
-    global minn
+    global minn, Rotary_counter, LockRotary, Move_on
+
+    NewCounter = 0
     
+
+    init() 
+    Mover_button()
+
     while True:
-    
-        # If dial is turned up, increase minutes
-        if pin_a.is_pressed:
-             minutes += 1
-             
-        # If dial is turned down, decrease minutes
-        if pin_b.is_pressed:
-            minutes -= 1
+        time.sleep(0.1)								# sleep 100 msec
 
-        setminutes = minutes
+        LockRotary.acquire()					# get lock for rotary switch
+        NewCounter = Rotary_counter			# get counter value
+        Rotary_counter = 0						# RESET IT TO 0
+        LockRotary.release()					# and release lock
+					
+        if (NewCounter !=0):					# Counter has CHANGED
+            minutes = minutes + NewCounter*abs(NewCounter)	# Decrease or increase minutes
+        minn = minutes
         # Jump to seconds
-        if button.is_pressed: 
-            time.sleep(1)
+        
+        if Move_on == False:
             break
-
-        else:
-            minn = minutes
 
         formatted = '{:02d}:{:02d}'.format(minutes, 0)
                 
         print (formatted, end = '\r')
         
-        time.sleep(.1)
-
-
-def seconds(seconds):
-    global secc
-
-    while True:
-        # If dial is turned up, increase seconds
-        if pin_a.is_pressed:
-             seconds += 1
-             
-        # If dial is turned down, decrease seconds
-        if pin_b.is_pressed:
-            seconds -= 1
-        # Jump to seconds
-        if button.is_pressed: break
-        
-        else:
-            secc = seconds 
-
-        formatted = '{:02d}:{:02d}'.format(minn, seconds)
-                
-        print (formatted, end = '\r')
-
-        
-
-        
+    
 def countdown(min, sec):
 
     min_converted = int(min)*60
@@ -84,7 +110,7 @@ def countdown(min, sec):
 
 secc = 0
 minutes(0)
-seconds(0)
+# seconds(0)
 countdown(minn, secc)
 
 quit()
