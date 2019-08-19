@@ -5,8 +5,8 @@
 Our main encoder code is borrowed from This code is courtesy of hrvoje.
 It can be found here. https://www.raspberrypi.org/forums/ """
 
-from gpiozero import Button
 import time
+from gpiozero import Button
 
 pin_a = Button(2, pull_up = True)
 pin_b = Button(3, pull_up = True)
@@ -16,7 +16,8 @@ reset = Button(5, pull_up = True)
 
 
 
-def ticker():
+def minutes(minutes):
+    global minn
     
     while True:
     
@@ -30,14 +31,22 @@ def ticker():
 
         setminutes = minutes
         # Jump to seconds
-        if button.is_pressed: break
+        if button.is_pressed: 
+            time.sleep(1)
+            break
 
         else:
-            setminutes = minutes
+            minn = minutes
 
-        formatted = '{:02d}:{:02d}'.format(minutes, seconds)
+        formatted = '{:02d}:{:02d}'.format(minutes, 0)
                 
         print (formatted, end = '\r')
+        
+        time.sleep(.1)
+
+
+def seconds(seconds):
+    global secc
 
     while True:
         # If dial is turned up, increase seconds
@@ -49,14 +58,15 @@ def ticker():
             seconds -= 1
         # Jump to seconds
         if button.is_pressed: break
+        
+        else:
+            secc = seconds 
 
-        formatted = '{:02d}:{:02d}'.format(minutes, seconds)
+        formatted = '{:02d}:{:02d}'.format(minn, seconds)
                 
         print (formatted, end = '\r')
 
-        setseconds = seconds
         
-    return (setminutes, seconds)
 
         
 def countdown(min, sec):
@@ -71,16 +81,14 @@ def countdown(min, sec):
         time.sleep(1)
         t -= 1
     print('Time is up!!!! \n\n\n\n\n')
-minutes = 0
-seconds = 0
 
-ticker()
-
-timer = ticker()
-print (timer)
-countdown(*timer)
+secc = 0
+minutes(0)
+seconds(0)
+countdown(minn, secc)
 
 quit()
+
 
 __author__ = "Jacob Roth-Ritchie"
 __copyright__ = "Copyright 20019, RSquar3dT3ch"
