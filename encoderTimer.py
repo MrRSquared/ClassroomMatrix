@@ -95,7 +95,7 @@ def Minutes(minutes):
         print (formatted, end = '\r')
 
 #Calculate minutes reading, direction and speed of turning left/rignt
-def Seconds(seccs):
+def Seconds(seconds):
     global seccs, Rotary_counter, LockRotary, Move_on
 
     NewCounter = 0
