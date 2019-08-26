@@ -6,15 +6,11 @@ Our main encoder code is borrowed from This code is courtesy of hrvoje.
 It can be found here. https://www.raspberrypi.org/forums/ """
 
 import time
-## code is used to denote a change from RPi.GPIO to gpiozero libraries
-##import RPi.GPIO as GPIO
-from gpiozero import Button
+import RPi.GPIO as GPIO
 import threading
-## Enc_A = 2  				# Encoder input A: input GPIO 4 
-## Enc_B = 3  			        # Encoder input B: input GPIO 14 
-Enc_A = Button(2)
-Enc_B = Button(3)
-button = Button(4)              #Encoder button
+Enc_A = 2  				# Encoder input A: input GPIO 4 
+Enc_B = 3  			        # Encoder input B: input GPIO 14 
+Button = 4              #Encoder button
 
 Rotary_counter = 0  			# Start counting from 0
 Current_A = 1					# Assume that rotary switch is not 
@@ -25,30 +21,31 @@ LockRotary = threading.Lock()		# create lock for rotary switch
 
 # initialize interrupt handlers
 def init():
-    ## GPIO.setwarnings(True)
-    ## GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(True)
+    GPIO.setmode(GPIO.BCM)
 
-    ## GPIO.setup(Button,GPIO.IN, pull_up_down = GPIO.PUD_UP)
+    GPIO.setup(Button,GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
-    ## GPIO.setup(Enc_A, GPIO.IN) 				
-    ## GPIO.setup(Enc_B, GPIO.IN)
+    GPIO.setup(Enc_A, GPIO.IN) 				
+    GPIO.setup(Enc_B, GPIO.IN)
     
-    ## GPIO.add_event_detect(Enc_A, GPIO.RISING, callback=rotary_interrupt) 				# NO bouncetime 
-    ## GPIO.add_event_detect(Enc_B, GPIO.RISING, callback=rotary_interrupt) 				# NO bouncetime 
-    Enc_A.when_pressed = rotary_interrupt
-    Enc_B.when_pressed = rotary_interrupt
+    GPIO.add_event_detect(Enc_A, GPIO.RISING, callback=rotary_interrupt) 				# NO bouncetime 
+    GPIO.add_event_detect(Enc_B, GPIO.RISING, callback=rotary_interrupt) 				# NO bouncetime 
+
     return
+
+def Mover_button():
+    global Move_on
+    Move_on = GPIO.input(Button)
+    #return
 
 # Rotarty encoder interrupt:
 # this one is called for both inputs from rotary switch (A and B)
 def rotary_interrupt(A_or_B):
-	global Rotary_counter, Current_A, Current_B, LockRotary
+	global Rotary_counter, Current_A, Current_B, LockRotary, Move_on
 													# read both of the switches
-    ## Switch_A = GPIO.input(Enc_A)
-	## Switch_B = GPIO.input(Enc_B)
-	Switch_A = Enc_A
-	Switch_B = Enc_B
-    
+	Switch_A = GPIO.input(Enc_A)
+	Switch_B = GPIO.input(Enc_B)
 													# now check if state of A or B has changed
 													# if not that means that bouncing caused it
 	if Current_A == Switch_A and Current_B == Switch_B:		# Same interrupt as before (Bouncing)?
@@ -69,12 +66,13 @@ def rotary_interrupt(A_or_B):
 
 #Calculate minutes reading, direction and speed of turning left/rignt
 def Minutes(minutes):
-    global minn, Rotary_counter, LockRotary
+    global minn, Rotary_counter, LockRotary, Move_on
 
     NewCounter = 0
     
 
     init() 
+    Mover_button()
 
     while True:
         time.sleep(0.1)								# sleep 100 msec
@@ -89,7 +87,7 @@ def Minutes(minutes):
         minn = minutes
         # Jump to seconds
         
-        if button.is_pressed:
+        if Move_on == False:
             break
 
         formatted = '{:02d}:{:02d}'.format(minutes, 0)
@@ -104,6 +102,7 @@ def Seconds(seconds):
     
 
     init() 
+    Mover_button()
 
     while True:
         time.sleep(0.1)								# sleep 100 msec
@@ -116,11 +115,10 @@ def Seconds(seconds):
         if (NewCounter !=0):					# Counter has CHANGED
             seconds = seconds + NewCounter*abs(NewCounter)	# Decrease or increase minutes
         seccs = seconds
-        # Start timer
-
-        if button.is_pressed:
-            break
+        # Jump to seconds
         
+        if Move_on == False:
+            break
 
         formatted = '{:02d}:{:02d}'.format(seconds, 0)
                 
