@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-# Display a runtext with double-buffering.
+
+"""This code displays our agenda and objectives for the day.  It reads a text file placed on a flash drive on the pi.  It is adapted from
+Henner Zeller's runtext example found in ~/bindings/python/samples. """
+
 from samplebase import SampleBase
 from rgbmatrix import graphics, RGBMatrixOptions
 import textwrap
@@ -71,3 +74,12 @@ if __name__ == "__main__":
     run_text = RunText()
     if (not run_text.process()):
         run_text.print_help()
+
+
+__author__ = "Jacob Roth-Ritchie"
+__copyright__ = "Copyright 20019, RSquar3dT3ch"
+__license__ = "GPL 3.0"
+__version__ = ".01"
+__maintainer__ = "Jacob Roth-Ritchie"
+__email__ = "jrothritchie@hdsd.org"
+__status__ = "Development"
