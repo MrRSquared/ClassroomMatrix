@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # Display a runtext with double-buffering.
-from samplebase import SampleBase
-#!/usr/bin/env python
+
 import os
 import subprocess
-import csv
+from samplebase import SampleBase
 from rgbmatrix import graphics, RGBMatrixOptions
 import textwrap
 import time
+import csv
 
 
 class RunText(SampleBase):
@@ -36,10 +36,21 @@ class RunText(SampleBase):
         pos = h+1
         new_pos = 6
         line = 1
-        agenda = tuple(agenda.splitlines(0))
+        print('agenda is' +agenda)
+        print(type(agenda))
+        agenda = agenda.splitlines(0)
+        print(type(agenda))
+        new_agenda = []
+        for x in range(len(agenda)):
+            wrapper = textwrap.fill(agenda [x], 6)
+            w2 = "\n".join(wrapper.split("\n"))
+            new_agenda.append(w2)
+        a = '\n'.join(new_agenda)
+        print(a)
+        a = a.splitlines(0)
         Objective = tuple(Objective.splitlines(0))
         aLength = int((len(agenda)) / 3)
-        print (aLength)
+        print (a)
         count = 0
             
 
@@ -52,10 +63,10 @@ class RunText(SampleBase):
             
             # Agenda Loop
             for x in range(aLength):
-                for x in range(len(agenda) - count):
+                for x in range(len(a) - count):
                     # 1st display
                     #offscreen_canvas.Clear()
-                    my_text = agenda[x + count]
+                    my_text = a[x + count]
                     # print(my_text)
                     stuff = graphics.DrawText(offscreen_canvas, font, 0 ,pos, textColor, my_text)
                     pos += new_pos

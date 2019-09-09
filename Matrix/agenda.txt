@@ -1,0 +1,5 @@
+name	department	birthday month
+John Smith	Accounting	"November
+Septembre
+July"
+Erica Meyers	IT	March
