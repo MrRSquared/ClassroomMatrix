@@ -5,10 +5,15 @@ import os
 import subprocess
 from samplebase import SampleBase
 from rgbmatrix import graphics, RGBMatrixOptions
+from gpiozero import Buttons
 import textwrap
 import time
 import csv
 
+block_1 = Button (1)
+block_2 = Button (2)
+block_3 = Button (3)
+block_4 = Button (4)
 
 screen_width = 5 #width of screen in characters
 
@@ -16,7 +21,7 @@ class RunText(SampleBase):
 
     def __init__(self, *args, **kwargs):
         super(RunText, self).__init__(*args, **kwargs)
-       
+      
         
     
                 
@@ -41,6 +46,9 @@ class RunText(SampleBase):
         new_pos = 6
         # line = 1
         count = 0
+        def block1(button):
+            
+            return block
         def display_recycler(input):
             # The matrix cannot read multiline text independently, so we need to import the text
             # and format it so it fits the screen.
@@ -58,33 +66,36 @@ class RunText(SampleBase):
             wrapped_display_text = tuple(display_text.splitlines(0))
             print(wrapped_display_text)  
             return wrapped_display_text
+        block = 1
         Categories = data[0]
         h1 = display_recycler(Categories[1])
-        agenda = data[1][2]
+        agenda = data[block][2]
         display_agenda = display_recycler(agenda)
         aLength = int((len(agenda)) / (4 -(len(h1)))) # to split the display text if it is too long. subtract the header in case it takes up multiple lines.
         # Objective
-
-        while True:
-            #offscreen_canvas.clear()
-            for x in range(len(h1)):
-                text = h1[x]
-                projector = graphics.DrawText(offscreen_canvas, font2, 0 , hpos, textColor, text)
-                hpos += new_pos
-                pos = hpos
-            
-            # Agenda Loop
-            for x in range(aLength):
-                for x in range(len(display_agenda) - count):
-                    my_text = display_agenda[x + count]
-                    projector = graphics.DrawText(offscreen_canvas, font, 0 ,pos, textColor, my_text)
-                    pos += new_pos
-                    print(my_text) 
+        def projector(self, h1, aLength, display_agenda,):
+            while True:
+                block_1.when_pressed = 
+                #offscreen_canvas.clear()
+                for x in range(len(h1)):
+                    text = h1[x]
+                    projector = graphics.DrawText(offscreen_canvas, font2, 0 , hpos, textColor, text)
+                    hpos += new_pos
+                    pos = hpos
+                
+                # Agenda Loop
+                for x in range(aLength):
+                    for x in range(len(display_agenda) - count):
+                        my_text = display_agenda[x + count]
+                        projector = graphics.DrawText(offscreen_canvas, font, 0 ,pos, textColor, my_text)
+                        pos += new_pos
+                        print(my_text) 
 
                     offscreen_canvas = self.matrix.SwapOnVSync(offscreen_canvas)
                     count += 1
                     time.sleep(10)
-                    offscreen_canvas.Clear()
+                offscreen_canvas.Clear()
+                time.sleep(10)
         
 # Main function
 if __name__ == "__main__":
